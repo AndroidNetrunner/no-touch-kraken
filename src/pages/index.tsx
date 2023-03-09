@@ -2,7 +2,7 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import styles from "../styles/Home.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import db from "../../firebase/firebase.config";
 import {
   arrayUnion,
@@ -17,9 +17,15 @@ import {
 import { useRouter, NextRouter } from "next/router";
 import { setRoomCode } from "store/slices/roomSlice";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
-import { createUser } from "store/slices/userSlice";
+import { createUser, setNickname, setUserId } from "store/slices/userSlice";
 import store, { RootState } from "store";
 import Room from "components/Room";
+import Cookies from "js-cookie";
+import {
+  setCurrentRound,
+  setPlayers,
+  setRevealedCards,
+} from "store/slices/gameSlice";
 
 async function handleCreate(nickname: string, dispatch: Dispatch<AnyAction>) {
   const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -53,10 +59,31 @@ async function handleJoin(
   }
 }
 export default function Home() {
-  const [nickname, setNickname] = useState("");
-  const [roomCode, setRoomCode] = useState("");
+  const [username, setUsername] = useState("");
+  const [entryCode, setEntryCode] = useState("");
   const code = useSelector((state: RootState) => state.room.roomCode);
   const dispatch = useDispatch();
+  useEffect(() => {
+    if (Cookies.get("roomCode")) {
+      const roomCode = Cookies.get("roomCode");
+      const nickname = Cookies.get("nickname");
+      const userId = Cookies.get("userId");
+      console.log(`userId:`, userId);
+      const docRef = doc(db, "games", roomCode);
+      (async () => {
+        const data = (await getDoc(docRef)).data();
+        if (data) {
+          console.log(`data:`, data);
+          dispatch(setRoomCode(roomCode));
+          dispatch(setNickname(nickname));
+          dispatch(setUserId(userId));
+          dispatch(setPlayers(data.players));
+          dispatch(setRevealedCards(data.revealedCards));
+          dispatch(setCurrentRound(data.currentRound));
+        }
+      })();
+    }
+  }, []);
   return code ? (
     <Room />
   ) : (
@@ -72,7 +99,7 @@ export default function Home() {
             type="text"
             className="form-control"
             id="nickNameInput"
-            onChange={(e) => setNickname(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </div>
         <div className="mb-3">
@@ -83,7 +110,7 @@ export default function Home() {
             type="text"
             className="form-control"
             id="roomCodeInput"
-            onChange={(e) => setRoomCode(e.target.value)}
+            onChange={(e) => setEntryCode(e.target.value)}
             maxLength={7}
           />
         </div>
@@ -93,10 +120,10 @@ export default function Home() {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={!nickname || !!roomCode}
+          disabled={!username || !!entryCode}
           onClick={(e) => {
             e.preventDefault();
-            handleCreate(nickname, dispatch);
+            handleCreate(username, dispatch);
           }}
         >
           방 생성
@@ -104,10 +131,10 @@ export default function Home() {
         <button
           type="submit"
           className="btn btn-success"
-          disabled={!nickname || !/^[A-Z]{7}$/.test(roomCode)}
+          disabled={!username || !/^[A-Z]{7}$/.test(entryCode)}
           onClick={(e) => {
             e.preventDefault();
-            handleJoin(roomCode, nickname, dispatch);
+            handleJoin(entryCode, username, dispatch);
           }}
         >
           방 입장
