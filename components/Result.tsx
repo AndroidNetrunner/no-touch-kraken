@@ -2,6 +2,7 @@ import { Player } from "interface";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
 import { setDescription } from "store/slices/gameSlice";
+import { setRoomCode } from "store/slices/roomSlice";
 
 export default function Result({
   players,
@@ -10,7 +11,6 @@ export default function Result({
   players: { [userId: string]: Player };
   description: string;
 }) {
-  const router = useRouter();
   const dispatch = useDispatch();
   return (
     <>
@@ -27,9 +27,7 @@ export default function Result({
       <button
         onClick={() => {
           dispatch(setDescription(""));
-          router.push({
-            pathname: "/",
-          });
+          dispatch(setRoomCode(""));
         }}
         className="btn btn-success"
       >
