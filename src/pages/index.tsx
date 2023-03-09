@@ -69,6 +69,7 @@ export default function Home() {
       const nickname = Cookies.get("nickname");
       const userId = Cookies.get("userId");
       console.log(`userId:`, userId);
+      if (!roomCode) return;
       const docRef = doc(db, "games", roomCode);
       (async () => {
         const data = (await getDoc(docRef)).data();
