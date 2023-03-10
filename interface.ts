@@ -18,7 +18,7 @@ export interface Player extends User {
 
 export interface Lobby {
   roomCode: string;
-  participants: { [userid: string]: User };
+  participants: User[];
 }
 
 export interface Game {

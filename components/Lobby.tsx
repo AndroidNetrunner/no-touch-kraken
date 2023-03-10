@@ -1,20 +1,25 @@
 import { dealCards, shuffle } from "@/utils";
 import db from "../firebase/firebase.config";
-import { deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
+import {
+  deleteDoc,
+  doc,
+  getDoc,
+  onSnapshot,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { User } from "interface";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import { setParticipants } from "store/slices/roomSlice";
+import { useEffect } from "react";
 
 const Roles = {
   PIRATE: "해적",
   SKELETON: "스켈레톤",
 } as const;
 
-async function handleClick(
-  roomCode: string,
-  participants: { [userId: string]: User }
-) {
+async function handleClick(roomCode: string, participants: User[]) {
   // Lobby 삭제
   await deleteDoc(doc(db, "rooms", roomCode));
   // Game 생성
@@ -43,18 +48,15 @@ async function handleClick(
       Roles.SKELETON,
     ],
   };
-  const shuffledRoles = shuffle(
-    roles[Object.keys(participants).length as 4 | 5 | 6]
-  );
+  const shuffledRoles = shuffle(roles[participants.length as 4 | 5 | 6]);
   const dealtCards = dealCards(Object.keys(participants).length, {
     empty: 0,
     treasure: 0,
   });
   let players: { [userId: string]: Object } = {};
-  Object.entries(participants).forEach((elem, index) => {
-    const user = elem[1];
-    players[user.userId] = {
-      ...user,
+  participants.forEach((participant, index) => {
+    players[participant.userId] = {
+      ...participant,
       role: shuffledRoles[index],
       hands: dealtCards.splice(0, 5),
     };
@@ -81,19 +83,36 @@ export default function Lobby({
   participants,
 }: {
   roomCode: string;
-  participants: { [userId: string]: User };
+  participants: User[];
 }) {
   const dispatch = useDispatch();
   const { nickname, userId } = useSelector((state: RootState) => state.user);
   const docRef = doc(db, "rooms", roomCode);
-  const unSub = onSnapshot(docRef, (doc) => {
-    const currentData = doc.data();
-    if (!currentData) return;
-    if (
-      JSON.stringify(currentData.participants) !== JSON.stringify(participants)
-    )
-      dispatch(setParticipants(currentData.participants));
-  });
+  useEffect(() => {
+    const unSub = onSnapshot(docRef, (doc) => {
+      const currentData = doc.data();
+      if (!currentData) return;
+      if (
+        JSON.stringify(currentData.participants) !==
+        JSON.stringify(participants)
+      )
+        dispatch(setParticipants(currentData.participants));
+    });
+
+    window.addEventListener("beforeunload", async () => {
+      const docRef = doc(db, "rooms", roomCode);
+      const data = await getDoc(docRef);
+      if (data.exists()) {
+        await updateDoc(docRef, {
+          participants: data
+            .data()
+            .participants.filter(
+              (participant: User) => participant.userId !== userId
+            ),
+        });
+      }
+    });
+  }, []);
   return (
     <>
       <h1>입장 코드: {roomCode}</h1>
