@@ -12,6 +12,7 @@ import Round from "./Round";
 import { shuffle } from "@/utils";
 import { card, Cards } from "interface";
 import Result from "./Result";
+import Cookies from "js-cookie";
 
 // state가 제대로 출력되지 않음.
 export default function Game({ roomCode }: { roomCode: string }) {
@@ -41,11 +42,18 @@ export default function Game({ roomCode }: { roomCode: string }) {
           dispatch(setCurrentRound(data.currentRound));
       }
     });
+    if (myPlayerId) Cookies.set("userId", myPlayerId);
+    if (myPlayer) Cookies.set("nickname", myPlayer.nickname);
+    if (roomCode) Cookies.set("roomCode", roomCode);
   }, []);
   return (
     <>
       {description ? (
-        <Result players={players} description={description} />
+        <Result
+          players={players}
+          description={description}
+          roomCode={roomCode}
+        />
       ) : (
         <>
           당신의 역할은 {myPlayer?.role}입니다.

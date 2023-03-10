@@ -10,10 +10,10 @@ const roomSlice = createSlice({
   name: "room",
   initialState,
   reducers: {
-    setRoomCode(state, { payload }) {
+    setRoomCode: (state, { payload }) => {
       state.roomCode = payload;
     },
-    setParticipants(state, { payload }) {
+    setParticipants: (state, { payload }) => {
       state.participants = payload;
     },
   },
