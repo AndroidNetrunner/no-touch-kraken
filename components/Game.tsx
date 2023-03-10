@@ -1,6 +1,6 @@
 import db from "../firebase/firebase.config";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import {
@@ -9,11 +9,8 @@ import {
   setPlayers,
 } from "store/slices/gameSlice";
 import Round from "./Round";
-import { shuffle } from "@/utils";
-import { card, Cards } from "interface";
 import Result from "./Result";
 
-// state가 제대로 출력되지 않음.
 export default function Game({ roomCode }: { roomCode: string }) {
   const myPlayerId = useSelector((state: RootState) => state.user.userId);
   const description = useSelector((state: RootState) => state.game.description);
