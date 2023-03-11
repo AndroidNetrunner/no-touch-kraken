@@ -10,6 +10,7 @@ import {
 } from "store/slices/gameSlice";
 import Round from "./Round";
 import Result from "./Result";
+import Cookies from "js-cookie";
 
 export default function Game({ roomCode }: { roomCode: string }) {
   const myPlayerId = useSelector((state: RootState) => state.user.userId);
@@ -38,11 +39,18 @@ export default function Game({ roomCode }: { roomCode: string }) {
           dispatch(setCurrentRound(data.currentRound));
       }
     });
+    if (myPlayerId) Cookies.set("userId", myPlayerId);
+    if (myPlayer) Cookies.set("nickname", myPlayer.nickname);
+    if (roomCode) Cookies.set("roomCode", roomCode);
   }, []);
   return (
     <>
       {description ? (
-        <Result players={players} description={description} />
+        <Result
+          players={players}
+          description={description}
+          roomCode={roomCode}
+        />
       ) : (
         <>
           당신의 역할은 {myPlayer?.role}입니다.

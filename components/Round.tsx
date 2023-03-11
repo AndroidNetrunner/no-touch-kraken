@@ -68,15 +68,18 @@ export default function Round({
 }) {
   const dispatch = useDispatch();
   const myUserId = useSelector((state: RootState) => state.user.userId);
+  console.log(`myUserId:`, myUserId);
   const player = useSelector(
     (state: RootState) => state.game.players[myUserId]
   );
+  console.log(`player:`, player);
   const { roundNumber, openedCards } = useSelector(
     (state: RootState) => state.game.currentRound
   );
   const { players, revealedCards, currentRound } = useSelector(
     (state: RootState) => state.game
   );
+  console.log(`players:`, players);
   const docRef = doc(db, "games", roomCode);
   useEffect(() => {
     const unSub = onSnapshot(docRef, (doc) => {
