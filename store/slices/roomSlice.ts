@@ -3,7 +3,7 @@ import { Lobby } from "interface";
 
 const initialState: Lobby = {
   roomCode: "",
-  participants: {},
+  participants: [],
 };
 
 const roomSlice = createSlice({
