@@ -4,19 +4,14 @@ import {
   doc,
   DocumentData,
   DocumentReference,
-  getDoc,
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import { Cards, card, Player, Round as IRound } from "interface";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Cards, Player, Round as IRound } from "interface";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
-import {
-  setCurrentRound,
-  setCurrentTurnPlayerId,
-  setRevealedCards,
-} from "store/slices/gameSlice";
+import { setCurrentRound, setRevealedCards } from "store/slices/gameSlice";
 import Action from "./Action";
 
 async function startNewRound(
@@ -32,28 +27,17 @@ async function startNewRound(
     revealedCards: {
       empty: number;
       treasure: number;
-      total: number;
     };
     currentRound: IRound;
   }
 ) {
-  const dealtCards = dealCards(Object.keys(players).length, {
-    empty: revealedCards.empty,
-    treasure: revealedCards.treasure,
-  });
-  let updatedPlayers: { [userId: string]: Object } = {};
-  Object.entries(players).forEach((elem, index) => {
-    const user = elem[1];
-    updatedPlayers[user.userId] = {
-      ...user,
-      hands: dealtCards.splice(0, 5 - currentRound.roundNumber),
-    };
-  });
+  const roundNumber = currentRound.roundNumber + 1;
+  const playersWithNewHands = dealCards(players, revealedCards, roundNumber);
   await updateDoc(docRef, {
-    players: updatedPlayers,
+    players: playersWithNewHands,
     currentRound: {
       ...currentRound,
-      roundNumber: currentRound.roundNumber + 1,
+      roundNumber,
       openedCards: 0,
     },
   });
@@ -72,7 +56,6 @@ export default function Round({
   const player = useSelector(
     (state: RootState) => state.game.players[myUserId]
   );
-  console.log(`player:`, player);
   const { roundNumber, openedCards } = useSelector(
     (state: RootState) => state.game.currentRound
   );

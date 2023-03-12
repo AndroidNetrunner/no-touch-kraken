@@ -8,59 +8,35 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { User } from "interface";
+import { Player, User } from "interface";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import { setParticipants } from "store/slices/roomSlice";
 import { useEffect } from "react";
+import roles from "../src/roles";
 
-const Roles = {
-  PIRATE: "해적",
-  SKELETON: "스켈레톤",
-} as const;
+function decideRoles(participants: User[]): {
+  [userId: string]: Omit<Player, "hands">;
+} {
+  const shuffledRoles = shuffle(roles[participants.length as 4 | 5 | 6]);
+  const participantsWithRoles: {
+    [userId: string]: Omit<Player, "hands">;
+  } = {};
+  for (let participant of participants) {
+    participantsWithRoles[participant.userId] = {
+      ...participant,
+      role: shuffledRoles.shift() as string,
+    };
+  }
+  return participantsWithRoles;
+}
 
 async function handleClick(roomCode: string, participants: User[]) {
   // Lobby 삭제
   await deleteDoc(doc(db, "rooms", roomCode));
   // Game 생성
-  const roles = {
-    4: [
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.SKELETON,
-      Roles.SKELETON,
-    ],
-    5: [
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.SKELETON,
-      Roles.SKELETON,
-    ],
-    6: [
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.PIRATE,
-      Roles.SKELETON,
-      Roles.SKELETON,
-    ],
-  };
-  const shuffledRoles = shuffle(roles[participants.length as 4 | 5 | 6]);
-  const dealtCards = dealCards(Object.keys(participants).length, {
-    empty: 0,
-    treasure: 0,
-  });
-  let players: { [userId: string]: Object } = {};
-  participants.forEach((participant, index) => {
-    players[participant.userId] = {
-      ...participant,
-      role: shuffledRoles[index],
-      hands: dealtCards.splice(0, 5),
-    };
-  });
+  const participantsWithRoles = decideRoles(participants);
+  const players = dealCards(participantsWithRoles);
   await setDoc(doc(db, "games", roomCode), {
     players,
     revealedCards: {

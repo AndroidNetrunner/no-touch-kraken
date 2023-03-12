@@ -6,7 +6,6 @@ const initialState: Game = {
   revealedCards: {
     empty: 0,
     treasure: 0,
-    total: 0,
   },
   currentRound: {
     openedCards: 0,

@@ -1,4 +1,4 @@
-import { card, Cards } from "interface";
+import { card, Cards, Player } from "interface";
 
 export function shuffle(array: string[]) {
   const copied = [...array];
@@ -28,7 +28,7 @@ function remainedTreasureCards(
   return numberOfPlayers - revealedTreasureCards;
 }
 
-export function dealCards(
+function shuffleCards(
   numberOfPlayers: number,
   revealedCards: { empty: number; treasure: number }
 ): card[] {
@@ -42,4 +42,22 @@ export function dealCards(
     ...Array(treasureCards).fill(Cards.TREASURE),
     Cards.KRAKEN,
   ]) as card[];
+}
+
+export function dealCards(
+  users: { [userId: string]: Omit<Player, "hands"> },
+  revealedCards: {
+    empty: number;
+    treasure: number;
+  } = { empty: 0, treasure: 0 },
+  roundNumber = 1
+): {
+  [userId: string]: Player;
+} {
+  const shuffledCards = shuffleCards(Object.keys(users).length, revealedCards);
+  const players: { [userId: string]: Player } = {};
+  for (let userId in users) {
+    players[userId] = { ...users[userId], hands: shuffledCards.splice(0, 5) };
+  }
+  return players;
 }

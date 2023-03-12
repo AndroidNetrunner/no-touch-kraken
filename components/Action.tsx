@@ -7,9 +7,11 @@ import styles from "../src/styles/Game.module.css";
 import { card, Cards, Game, Player, Round } from "interface";
 
 function getUpdatedGame(game: Game, chosenPlayer: string) {
-  const copiedGame = { ...game };
+  const copiedGame: Game = JSON.parse(JSON.stringify(game));
   const card = copiedGame.players[chosenPlayer].hands.shift();
   const numberOfPlayers = Object.keys(copiedGame.players).length;
+  copiedGame.currentRound.currentTurnPlayerId = chosenPlayer;
+  copiedGame.currentRound.openedCards += 1;
   if (!card) throw new Error("Nominating player without cards");
   switch (card) {
     case Cards.EMPTY:
@@ -32,10 +34,9 @@ function getUpdatedGame(game: Game, chosenPlayer: string) {
 }
 
 async function flipCard(roomCode: string, game: Game, chosenPlayer: string) {
-  await updateDoc(
-    doc(db, "games", roomCode),
-    getUpdatedGame(game, chosenPlayer)
-  );
+  await updateDoc(doc(db, "games", roomCode), {
+    ...getUpdatedGame(game, chosenPlayer),
+  });
 }
 
 export default function Action({ roomCode }: { roomCode: string }) {
