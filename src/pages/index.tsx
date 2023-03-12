@@ -4,17 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styles from "../styles/Home.module.css";
 import { useEffect, useState } from "react";
 import db from "../../firebase/firebase.config";
-import {
-  arrayUnion,
-  collection,
-  CollectionReference,
-  doc,
-  DocumentData,
-  getDoc,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
-import { useRouter, NextRouter } from "next/router";
+import { arrayUnion, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { setRoomCode } from "store/slices/roomSlice";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { createUser, setNickname, setUserId } from "store/slices/userSlice";
@@ -68,13 +58,11 @@ export default function Home() {
       const roomCode = Cookies.get("roomCode");
       const nickname = Cookies.get("nickname");
       const userId = Cookies.get("userId");
-      console.log(`userId:`, userId);
       if (!roomCode) return;
       const docRef = doc(db, "games", roomCode);
       (async () => {
         const data = (await getDoc(docRef)).data();
         if (data) {
-          console.log(`data:`, data);
           dispatch(setRoomCode(roomCode));
           dispatch(setNickname(nickname));
           dispatch(setUserId(userId));

@@ -57,7 +57,10 @@ export function dealCards(
   const shuffledCards = shuffleCards(Object.keys(users).length, revealedCards);
   const players: { [userId: string]: Player } = {};
   for (let userId in users) {
-    players[userId] = { ...users[userId], hands: shuffledCards.splice(0, 5) };
+    players[userId] = {
+      ...users[userId],
+      hands: shuffledCards.splice(0, 6 - roundNumber),
+    };
   }
   return players;
 }

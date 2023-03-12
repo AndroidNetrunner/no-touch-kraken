@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "store";
 import styles from "../src/styles/Game.module.css";
-import { card, Cards, Game, Player, Round } from "interface";
+import { Cards, Game } from "interface";
 
 function getUpdatedGame(game: Game, chosenPlayer: string) {
   const copiedGame: Game = JSON.parse(JSON.stringify(game));

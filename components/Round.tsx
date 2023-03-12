@@ -1,4 +1,4 @@
-import { dealCards, shuffle } from "@/utils";
+import { dealCards } from "@/utils";
 import db from "../firebase/firebase.config";
 import {
   doc,
@@ -62,7 +62,7 @@ export default function Round({
   const { players, revealedCards, currentRound } = useSelector(
     (state: RootState) => state.game
   );
-  console.log(`players:`, players);
+
   const docRef = doc(db, "games", roomCode);
   useEffect(() => {
     const unSub = onSnapshot(docRef, (doc) => {
