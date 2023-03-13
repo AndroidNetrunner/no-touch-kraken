@@ -101,7 +101,8 @@ a {
 }
 
 @media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+}
+
+.btn {
+  margin: 0.3cm;
 }
