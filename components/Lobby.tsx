@@ -13,11 +13,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import { setParticipants } from "store/slices/roomSlice";
 import { useEffect } from "react";
+import styles from "../src/styles/Lobby.module.css";
+import { Roles } from "../src/roles";
 
-const Roles = {
-  PIRATE: "해적",
-  SKELETON: "스켈레톤",
-} as const;
+function canStartGame(numberOfParticipants: number): boolean {
+  return numberOfParticipants >= 4 && numberOfParticipants <= 6;
+}
 
 async function handleClick(roomCode: string, participants: User[]) {
   // Lobby 삭제
@@ -115,32 +116,33 @@ export default function Lobby({
   }, []);
   return (
     <>
-      <h1>입장 코드: {roomCode}</h1>
-      <h2>내 정보</h2>
-      <p>
-        닉네임: {nickname} 유저 ID: {userId}
-      </p>
-      <h2>방 정보</h2>
-      <span>
-        참가자:{" "}
-        {Object.values(participants)
-          .map((participant) => participant.nickname)
-          .join(", ")}
-      </span>
-      <br />
-      <button
-        type="submit"
-        className="btn btn-primary"
-        disabled={
-          !(
-            Object.keys(participants).length >= 4 &&
-            Object.keys(participants).length <= 6
-          )
-        }
-        onClick={async () => await handleClick(roomCode, participants)}
-      >
-        게임 시작
-      </button>
+      <div className={styles.main + " " + "container"}>
+        <h1>입장 코드: {roomCode}</h1>
+        <h2>
+          내 닉네임: {nickname}, 참가자:{" "}
+          {Object.values(participants)
+            .map((participant) => participant.nickname)
+            .join(", ")}
+        </h2>
+        <iframe
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/ckd5Au7lryE?start=12"
+          title="YouTube video player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        ></iframe>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={!canStartGame(Object.keys(participants).length)}
+          onClick={async () => await handleClick(roomCode, participants)}
+        >
+          게임 시작
+        </button>
+        {!canStartGame(Object.keys(participants).length) && (
+          <p>게임을 시작하기 위해서는 최소 4명, 최대 6명이 필요합니다.</p>
+        )}
+      </div>
     </>
   );
 }
