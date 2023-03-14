@@ -68,18 +68,15 @@ export default function Round({
 }) {
   const dispatch = useDispatch();
   const myUserId = useSelector((state: RootState) => state.user.userId);
-  console.log(`myUserId:`, myUserId);
   const player = useSelector(
     (state: RootState) => state.game.players[myUserId]
   );
-  console.log(`player:`, player);
   const { roundNumber, openedCards } = useSelector(
     (state: RootState) => state.game.currentRound
   );
   const { players, revealedCards, currentRound } = useSelector(
     (state: RootState) => state.game
   );
-  console.log(`players:`, players);
   const docRef = doc(db, "games", roomCode);
   useEffect(() => {
     const unSub = onSnapshot(docRef, (doc) => {
@@ -90,23 +87,26 @@ export default function Round({
       }
     });
   }, []);
-  // TODO: 카드 오픈 후 턴 넘기기 행동 구현
   return (
     <>
       {myUserId === currentRound.currentTurnPlayerId && (
         <Action roomCode={roomCode} />
+      )}{" "}
+      {!(playerNumber - openedCards) && (
+        <button
+          className="btn btn-primary"
+          disabled={!!(playerNumber - openedCards)}
+          onClick={() =>
+            startNewRound(docRef, { players, revealedCards, currentRound })
+          }
+        >
+          다음 라운드 시작
+        </button>
       )}
-      <button
-        className="btn btn-primary"
-        disabled={!!(playerNumber - openedCards)}
-        onClick={() =>
-          startNewRound(docRef, { players, revealedCards, currentRound })
-        }
-      >
-        다음 라운드 시작
-      </button>
       <br />
-      {roundNumber}라운드 남은 카드: {playerNumber - openedCards}장 <br />
+      <h3>
+        {roundNumber}라운드 남은 카드: {playerNumber - openedCards}장{" "}
+      </h3>
       <p>현재 턴: {players[currentRound.currentTurnPlayerId]?.nickname}</p>
       <h3>손패 카드</h3>
       <div>

@@ -14,7 +14,6 @@ import Cookies from "js-cookie";
 import styles from "../src/styles/Game.module.css";
 import { Roles } from "@/roles";
 
-// state가 제대로 출력되지 않음.
 export default function Game({ roomCode }: { roomCode: string }) {
   const myPlayerId = useSelector((state: RootState) => state.user.userId);
   const description = useSelector((state: RootState) => state.game.description);
@@ -57,31 +56,40 @@ export default function Game({ roomCode }: { roomCode: string }) {
           />
         ) : (
           <>
-            <h1>
-              당신의 역할은{" "}
-              <span
-                className={
-                  myPlayer?.role === Roles.PIRATE
-                    ? styles.pirate
-                    : styles.skeleton
-                }
-              >
-                {myPlayer?.role}
-              </span>
-              입니다.
-            </h1>
-            <span className={styles.description}>
-              {"승리 조건: " +
-                (myPlayer?.role === Roles.PIRATE
-                  ? "4라운드 안에 크라켄을 만나지 않고 4개의 보물상자를 모두 찾기"
-                  : "4라운드동안 4개의 보물상자를 못 찾거나, 크라켄을 조우하기")}
-            </span>
-            <h1>현재 등장한 카드</h1>
-            보물상자: {treasure} 빈 상자: {empty}
-            <Round
-              playerNumber={Object.keys(players).length as 4 | 5 | 6}
-              roomCode={roomCode}
-            />
+            <div className="row">
+              <div className="col-sm">
+                <h3>
+                  당신의 역할은{" "}
+                  <span
+                    className={
+                      myPlayer?.role === Roles.PIRATE
+                        ? styles.pirate
+                        : styles.skeleton
+                    }
+                  >
+                    {myPlayer?.role}
+                  </span>
+                  입니다.
+                </h3>
+                <p className={styles.description}>
+                  {"승리 조건: " +
+                    (myPlayer?.role === Roles.PIRATE
+                      ? "4라운드 안에 크라켄을 만나지 않고 4개의 보물상자를 모두 찾기"
+                      : "4라운드동안 4개의 보물상자를 못 찾거나, 크라켄을 조우하기")}
+                </p>
+                <br />
+                <h3>현재 등장한 카드</h3>
+                <span>
+                  보물상자: {treasure} 빈 상자: {empty}
+                </span>
+              </div>
+              <div className="col-sm">
+                <Round
+                  playerNumber={Object.keys(players).length as 4 | 5 | 6}
+                  roomCode={roomCode}
+                />
+              </div>
+            </div>
           </>
         )}
       </div>
