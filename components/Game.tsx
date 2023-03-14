@@ -12,12 +12,11 @@ import Round from "./Round";
 import Result from "./Result";
 import Cookies from "js-cookie";
 
-export default function Game({ roomCode }: { roomCode: string }) {
+export default function Game() {
   const myPlayerId = useSelector((state: RootState) => state.user.userId);
   const description = useSelector((state: RootState) => state.game.description);
-  const { players, revealedCards } = useSelector(
-    (state: RootState) => state.game
-  );
+  const { players } = useSelector((state: RootState) => state.game);
+  const { roomCode } = useSelector((state: RootState) => state.room);
   const myPlayer = players[myPlayerId];
   const { treasure, empty } = useSelector(
     (state: RootState) => state.game.revealedCards

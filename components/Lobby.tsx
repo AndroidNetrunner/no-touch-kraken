@@ -3,6 +3,8 @@ import db from "../firebase/firebase.config";
 import {
   deleteDoc,
   doc,
+  DocumentData,
+  DocumentSnapshot,
   getDoc,
   onSnapshot,
   setDoc,
@@ -12,8 +14,9 @@ import { Player, User } from "interface";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import { setParticipants } from "store/slices/roomSlice";
-import { useEffect } from "react";
+import { Dispatch, useEffect } from "react";
 import roles from "../src/roles";
+import { AnyAction } from "@reduxjs/toolkit";
 
 function decideRoles(participants: User[]): {
   [userId: string]: Omit<Player, "hands">;
@@ -32,9 +35,7 @@ function decideRoles(participants: User[]): {
 }
 
 async function handleClick(roomCode: string, participants: User[]) {
-  // Lobby 삭제
   await deleteDoc(doc(db, "rooms", roomCode));
-  // Game 생성
   const participantsWithRoles = decideRoles(participants);
   const players = dealCards(participantsWithRoles);
   await setDoc(doc(db, "games", roomCode), {
@@ -54,65 +55,77 @@ async function handleClick(roomCode: string, participants: User[]) {
   });
 }
 
-export default function Lobby({
-  roomCode,
-  participants,
-}: {
-  roomCode: string;
-  participants: User[];
-}) {
-  const dispatch = useDispatch();
-  const { nickname, userId } = useSelector((state: RootState) => state.user);
-  const docRef = doc(db, "rooms", roomCode);
-  useEffect(() => {
-    const unSub = onSnapshot(docRef, (doc) => {
-      const currentData = doc.data();
-      if (!currentData) return;
-      if (
-        JSON.stringify(currentData.participants) !==
-        JSON.stringify(participants)
-      )
-        dispatch(setParticipants(currentData.participants));
-    });
+function getNicknames(participants: Object) {
+  return Object.values(participants)
+    .map((participant) => participant.nickname)
+    .join(", ");
+}
 
-    window.addEventListener("beforeunload", async () => {
-      const docRef = doc(db, "rooms", roomCode);
-      const data = await getDoc(docRef);
-      if (data.exists()) {
-        await updateDoc(docRef, {
-          participants: data
-            .data()
-            .participants.filter(
-              (participant: User) => participant.userId !== userId
-            ),
-        });
-      }
+function isSameDataWithStoreParticipants(data: DocumentData, original: User[]) {
+  if (data)
+    return JSON.stringify(data.participants) === JSON.stringify(original);
+}
+
+async function deleteParticipant(userId: string, roomCode: string) {
+  const docRef = doc(db, "rooms", roomCode);
+  const data = await getDoc(docRef);
+  if (data.exists()) {
+    await updateDoc(docRef, {
+      participants: data
+        .data()
+        .participants.filter(
+          (participant: User) => participant.userId !== userId
+        ),
     });
+  }
+}
+
+function addListenerToParticipants(
+  doc: DocumentSnapshot,
+  participants: User[],
+  dispatch: Dispatch<AnyAction>
+) {
+  const currentData = doc.data();
+  if (currentData && isSameDataWithStoreParticipants(currentData, participants))
+    dispatch(setParticipants(currentData.participants));
+}
+
+function AreEnoughPeople(participants: User[]) {
+  return (
+    Object.keys(participants).length >= 4 &&
+    Object.keys(participants).length <= 6
+  );
+}
+
+export default function Lobby() {
+  const { nickname, userId: myUserId } = useSelector(
+    (state: RootState) => state.user
+  );
+  const { participants, roomCode } = useSelector(
+    (state: RootState) => state.room
+  );
+  useEffect(() => {
+    const unSub = onSnapshot(doc(db, "rooms", roomCode), (doc) =>
+      addListenerToParticipants(doc, participants, useDispatch())
+    );
+    window.addEventListener("beforeunload", () =>
+      deleteParticipant(myUserId, roomCode)
+    );
   }, []);
   return (
     <>
       <h1>입장 코드: {roomCode}</h1>
       <h2>내 정보</h2>
       <p>
-        닉네임: {nickname} 유저 ID: {userId}
+        닉네임: {nickname} 유저 ID: {myUserId}
       </p>
       <h2>방 정보</h2>
-      <span>
-        참가자:{" "}
-        {Object.values(participants)
-          .map((participant) => participant.nickname)
-          .join(", ")}
-      </span>
+      <span>참가자: {getNicknames(participants)}</span>
       <br />
       <button
         type="submit"
         className="btn btn-primary"
-        disabled={
-          !(
-            Object.keys(participants).length >= 4 &&
-            Object.keys(participants).length <= 6
-          )
-        }
+        disabled={!AreEnoughPeople(participants)}
         onClick={async () => await handleClick(roomCode, participants)}
       >
         게임 시작

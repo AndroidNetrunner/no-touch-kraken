@@ -43,6 +43,13 @@ async function startNewRound(
   });
 }
 
+function countCards(
+  player: Player,
+  box: typeof Cards.KRAKEN | typeof Cards.EMPTY | typeof Cards.TREASURE
+): number {
+  return player?.hands.filter((card) => card === box).length;
+}
+
 export default function Round({
   playerNumber,
   roomCode,
@@ -52,7 +59,6 @@ export default function Round({
 }) {
   const dispatch = useDispatch();
   const myUserId = useSelector((state: RootState) => state.user.userId);
-  console.log(`myUserId:`, myUserId);
   const player = useSelector(
     (state: RootState) => state.game.players[myUserId]
   );
@@ -73,7 +79,6 @@ export default function Round({
       }
     });
   }, []);
-  // TODO: 카드 오픈 후 턴 넘기기 행동 구현
   return (
     <>
       {myUserId === currentRound.currentTurnPlayerId && (
@@ -89,15 +94,16 @@ export default function Round({
         다음 라운드 시작
       </button>
       <br />
-      {roundNumber}라운드 남은 카드: {playerNumber - openedCards}장 <br />
-      <p>현재 턴: {players[currentRound.currentTurnPlayerId]?.nickname}</p>
+      <p>
+        {roundNumber}라운드 남은 카드: {playerNumber - openedCards}장
+      </p>{" "}
+      <br />
+      현재 턴: {players[currentRound.currentTurnPlayerId]?.nickname}
       <h3>손패 카드</h3>
       <div>
-        빈 상자: {player?.hands.filter((card) => card === Cards.EMPTY).length}{" "}
-        <br />
-        보물상자:{" "}
-        {player?.hands.filter((card) => card === Cards.TREASURE).length} <br />
-        크라켄: {player?.hands.filter((card) => card === Cards.KRAKEN).length}
+        빈 상자: {countCards(player, Cards.EMPTY)} <br />
+        보물상자: {countCards(player, Cards.TREASURE)} <br />
+        크라켄: {countCards(player, Cards.KRAKEN)}
         <br />
       </div>
     </>
