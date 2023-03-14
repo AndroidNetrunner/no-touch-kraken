@@ -104,9 +104,10 @@ export default function Lobby() {
   const { participants, roomCode } = useSelector(
     (state: RootState) => state.room
   );
+  const dispatch = useDispatch();
   useEffect(() => {
     const unSub = onSnapshot(doc(db, "rooms", roomCode), (doc) =>
-      addListenerToParticipants(doc, participants, useDispatch())
+      addListenerToParticipants(doc, participants, dispatch)
     );
     window.addEventListener("beforeunload", () =>
       deleteParticipant(myUserId, roomCode)
