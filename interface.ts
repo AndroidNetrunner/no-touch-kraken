@@ -26,7 +26,6 @@ export interface Game {
   revealedCards: {
     empty: number;
     treasure: number;
-    total: number;
   };
   currentRound: Round;
   description: string;

@@ -32,6 +32,29 @@ async function handleCreate(nickname: string, dispatch: Dispatch<AnyAction>) {
     participants: [currentUser],
   });
 }
+async function syncStoreWithFirebase(
+  {
+    roomCode,
+    nickname,
+    userId,
+  }: {
+    roomCode: string | undefined;
+    nickname: string | undefined;
+    userId: string | undefined;
+  },
+  dispatch: Dispatch<AnyAction>
+) {
+  if (!roomCode || !nickname || !userId) return;
+  const data = (await getDoc(doc(db, "games", roomCode))).data();
+  if (data) {
+    dispatch(setRoomCode(roomCode));
+    dispatch(setNickname(nickname));
+    dispatch(setUserId(userId));
+    dispatch(setPlayers(data.players));
+    dispatch(setRevealedCards(data.revealedCards));
+    dispatch(setCurrentRound(data.currentRound));
+  }
+}
 
 async function handleJoin(
   roomCode: string,
@@ -54,24 +77,9 @@ export default function Home() {
   const code = useSelector((state: RootState) => state.room.roomCode);
   const dispatch = useDispatch();
   useEffect(() => {
-    if (Cookies.get("roomCode")) {
-      const roomCode = Cookies.get("roomCode");
-      const nickname = Cookies.get("nickname");
-      const userId = Cookies.get("userId");
-      if (!roomCode) return;
-      const docRef = doc(db, "games", roomCode);
-      (async () => {
-        const data = (await getDoc(docRef)).data();
-        if (data) {
-          dispatch(setRoomCode(roomCode));
-          dispatch(setNickname(nickname));
-          dispatch(setUserId(userId));
-          dispatch(setPlayers(data.players));
-          dispatch(setRevealedCards(data.revealedCards));
-          dispatch(setCurrentRound(data.currentRound));
-        }
-      })();
-    }
+    const { roomCode, nickname, userId } = Cookies.get();
+    if (!roomCode || !nickname || !userId) return;
+    syncStoreWithFirebase({ roomCode, nickname, userId }, dispatch);
   }, []);
   return code ? (
     <Room />

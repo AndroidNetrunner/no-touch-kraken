@@ -1,7 +1,6 @@
 import db from "../firebase/firebase.config";
 import { deleteDoc, doc, setDoc } from "firebase/firestore";
 import { Player } from "interface";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setDescription } from "store/slices/gameSlice";
