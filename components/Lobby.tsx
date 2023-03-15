@@ -17,6 +17,7 @@ import { setParticipants } from "store/slices/roomSlice";
 import { Dispatch, useEffect } from "react";
 import roles from "../src/roles";
 import { AnyAction } from "@reduxjs/toolkit";
+import styles from "../src/styles/Lobby.module.css";
 
 function decideRoles(participants: User[]): {
   [userId: string]: Omit<Player, "hands">;
@@ -90,7 +91,7 @@ function addListenerToParticipants(
     dispatch(setParticipants(currentData.participants));
 }
 
-function AreEnoughPeople(participants: User[]) {
+function areEnoughPeople(participants: User[]) {
   return (
     Object.keys(participants).length >= 4 &&
     Object.keys(participants).length <= 6
@@ -133,12 +134,12 @@ export default function Lobby() {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={!canStartGame(Object.keys(participants).length)}
+          disabled={!areEnoughPeople(participants)}
           onClick={async () => await handleClick(roomCode, participants)}
         >
           게임 시작
         </button>
-        {!canStartGame(Object.keys(participants).length) && (
+        {!areEnoughPeople(participants) && (
           <p>게임을 시작하기 위해서는 최소 4명, 최대 6명이 필요합니다.</p>
         )}
       </div>
