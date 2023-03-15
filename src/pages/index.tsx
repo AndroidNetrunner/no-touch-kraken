@@ -85,58 +85,67 @@ export default function Home() {
     <Room />
   ) : (
     <main className={styles.main}>
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <h1>노 터치 크라켄 온라인에 오신 것을 환영합니다!</h1>
-      <form>
-        <div className="mb-3">
-          <label htmlFor="nicknameInput" className="form-label">
-            닉네임(필수)
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="nickNameInput"
-            onChange={(e) => setUsername(e.target.value)}
-          />
+      {/* <meta name="viewport" content="width=device-width, initial-scale=1" /> */}
+      <h1 className={styles.welcome}>
+        노 터치 크라켄 온라인에 오신 것을 환영합니다!
+      </h1>
+      <div className="container">
+        <div className="row">
+          <div className="col-sm"></div>
+          <div className="col-sm">
+            <form>
+              <div className="mb-3">
+                <label htmlFor="nicknameInput" className="form-label">
+                  닉네임(필수)
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="nickNameInput"
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="roomCodeInput" className="form-label">
+                  입장 코드
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="roomCodeInput"
+                  onChange={(e) => setEntryCode(e.target.value)}
+                  maxLength={7}
+                />
+              </div>
+              <div id="enterCodeDescription" className="form-text">
+                방 생성 시에는 입장 코드를 입력하지 말아주세요.
+              </div>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!username || !!entryCode}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCreate(username, dispatch);
+                }}
+              >
+                방 생성
+              </button>
+              <button
+                type="submit"
+                className="btn btn-success"
+                disabled={!username || !/^[A-Z]{7}$/.test(entryCode)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleJoin(entryCode, username, dispatch);
+                }}
+              >
+                방 입장
+              </button>
+            </form>
+          </div>
         </div>
-        <div className="mb-3">
-          <label htmlFor="roomCodeInput" className="form-label">
-            입장 코드
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="roomCodeInput"
-            onChange={(e) => setEntryCode(e.target.value)}
-            maxLength={7}
-          />
-        </div>
-        <div id="enterCodeDescription" className="form-text">
-          방 생성 시에는 입장 코드를 입력하지 말아주세요.
-        </div>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={!username || !!entryCode}
-          onClick={(e) => {
-            e.preventDefault();
-            handleCreate(username, dispatch);
-          }}
-        >
-          방 생성
-        </button>
-        <button
-          type="submit"
-          className="btn btn-success"
-          disabled={!username || !/^[A-Z]{7}$/.test(entryCode)}
-          onClick={(e) => {
-            e.preventDefault();
-            handleJoin(entryCode, username, dispatch);
-          }}
-        >
-          방 입장
-        </button>
-      </form>
+      </div>
     </main>
   );
 }

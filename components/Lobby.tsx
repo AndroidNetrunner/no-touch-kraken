@@ -115,22 +115,33 @@ export default function Lobby() {
   }, []);
   return (
     <>
-      <h1>입장 코드: {roomCode}</h1>
-      <h2>내 정보</h2>
-      <p>
-        닉네임: {nickname} 유저 ID: {myUserId}
-      </p>
-      <h2>방 정보</h2>
-      <span>참가자: {getNicknames(participants)}</span>
-      <br />
-      <button
-        type="submit"
-        className="btn btn-primary"
-        disabled={!AreEnoughPeople(participants)}
-        onClick={async () => await handleClick(roomCode, participants)}
-      >
-        게임 시작
-      </button>
+      <div className={styles.main + " " + "container"}>
+        <h1>입장 코드: {roomCode}</h1>
+        <h2>
+          내 닉네임: {nickname}, 참가자:{" "}
+          {Object.values(participants)
+            .map((participant) => participant.nickname)
+            .join(", ")}
+        </h2>
+        <iframe
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/ckd5Au7lryE?start=12"
+          title="YouTube video player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        ></iframe>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={!canStartGame(Object.keys(participants).length)}
+          onClick={async () => await handleClick(roomCode, participants)}
+        >
+          게임 시작
+        </button>
+        {!canStartGame(Object.keys(participants).length) && (
+          <p>게임을 시작하기 위해서는 최소 4명, 최대 6명이 필요합니다.</p>
+        )}
+      </div>
     </>
   );
 }
