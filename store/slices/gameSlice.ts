@@ -12,7 +12,7 @@ const initialState: Game = {
     currentTurnPlayerId: "",
     roundNumber: 1,
   },
-  description: "",
+  gameEndingDescription: "",
 };
 
 const gameSlice = createSlice({
@@ -38,7 +38,7 @@ const gameSlice = createSlice({
       state.currentRound.roundNumber = payload.roundNumber;
     },
     setDescription: (state, { payload }) => {
-      state.description = payload;
+      state.gameEndingDescription = payload;
     },
   },
 });

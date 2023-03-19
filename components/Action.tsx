@@ -20,15 +20,16 @@ function getUpdatedGame(game: Game, chosenPlayer: string) {
         copiedGame.currentRound.roundNumber === 4 &&
         copiedGame.currentRound.openedCards >= numberOfPlayers
       )
-        copiedGame.description = "시간 초과로 인한 스켈레톤의 승리";
+        copiedGame.gameEndingDescription = "시간 초과로 인한 스켈레톤의 승리";
       break;
     case Cards.TREASURE:
       copiedGame.revealedCards.treasure += 1;
       if (game.revealedCards.treasure >= numberOfPlayers)
-        copiedGame.description = "모든 보물상자 발견으로 인한 해적의 승리";
+        copiedGame.gameEndingDescription =
+          "모든 보물상자 발견으로 인한 해적의 승리";
       break;
     default:
-      copiedGame.description = "크라켄 조우로 인한 스켈레톤의 승리";
+      copiedGame.gameEndingDescription = "크라켄 조우로 인한 스켈레톤의 승리";
   }
   return copiedGame;
 }
