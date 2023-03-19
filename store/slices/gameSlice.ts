@@ -6,14 +6,13 @@ const initialState: Game = {
   revealedCards: {
     empty: 0,
     treasure: 0,
-    total: 0,
   },
   currentRound: {
     openedCards: 0,
     currentTurnPlayerId: "",
     roundNumber: 1,
   },
-  description: "",
+  gameEndingDescription: "",
 };
 
 const gameSlice = createSlice({
@@ -39,7 +38,7 @@ const gameSlice = createSlice({
       state.currentRound.roundNumber = payload.roundNumber;
     },
     setDescription: (state, { payload }) => {
-      state.description = payload;
+      state.gameEndingDescription = payload;
     },
   },
 });

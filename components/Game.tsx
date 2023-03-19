@@ -12,25 +12,24 @@ import Round from "./Round";
 import Result from "./Result";
 import Cookies from "js-cookie";
 import styles from "../src/styles/Game.module.css";
-import { Roles } from "@/roles";
+import Role from "./Role";
+import RevealedCards from "./RevealedCards";
 
-export default function Game({ roomCode }: { roomCode: string }) {
-  const myPlayerId = useSelector((state: RootState) => state.user.userId);
-  const description = useSelector((state: RootState) => state.game.description);
-  const { players, revealedCards } = useSelector(
-    (state: RootState) => state.game
-  );
+export default function Game() {
+  const {
+    user: { userId: myPlayerId, nickname },
+    game: {
+      players,
+      gameEndingDescription,
+      revealedCards,
+      currentRound: { roundNumber },
+    },
+    room: { roomCode },
+  } = useSelector((state: RootState) => state);
   const myPlayer = players[myPlayerId];
-  const { treasure, empty } = useSelector(
-    (state: RootState) => state.game.revealedCards
-  );
-  const { roundNumber } = useSelector(
-    (state: RootState) => state.game.currentRound
-  );
   const dispatch = useDispatch();
-  const docRef = doc(db, "games", roomCode);
   useEffect(() => {
-    const unsubGame = onSnapshot(docRef, (doc) => {
+    onSnapshot(doc(db, "games", roomCode), (doc) => {
       const data = doc.data();
       if (data) {
         dispatch(setPlayers(data.players));
@@ -42,54 +41,26 @@ export default function Game({ roomCode }: { roomCode: string }) {
       }
     });
     if (myPlayerId) Cookies.set("userId", myPlayerId);
-    if (myPlayer) Cookies.set("nickname", myPlayer.nickname);
+    if (myPlayer) Cookies.set("nickname", nickname);
     if (roomCode) Cookies.set("roomCode", roomCode);
   }, []);
   return (
     <>
       <div className={"container" + " " + styles.main}>
-        {description ? (
+        {gameEndingDescription ? (
           <Result
             players={players}
-            description={description}
+            description={gameEndingDescription}
             roomCode={roomCode}
           />
         ) : (
           <>
-            <div className="row">
-              <div className="col-sm">
-                <h3>
-                  당신의 역할은{" "}
-                  <span
-                    className={
-                      myPlayer?.role === Roles.PIRATE
-                        ? styles.pirate
-                        : styles.skeleton
-                    }
-                  >
-                    {myPlayer?.role}
-                  </span>
-                  입니다.
-                </h3>
-                <p className={styles.description}>
-                  {"승리 조건: " +
-                    (myPlayer?.role === Roles.PIRATE
-                      ? "4라운드 안에 크라켄을 만나지 않고 4개의 보물상자를 모두 찾기"
-                      : "4라운드동안 4개의 보물상자를 못 찾거나, 크라켄을 조우하기")}
-                </p>
-                <br />
-                <h3>현재 등장한 카드</h3>
-                <span>
-                  보물상자: {treasure} 빈 상자: {empty}
-                </span>
-              </div>
-              <div className="col-sm">
-                <Round
-                  playerNumber={Object.keys(players).length as 4 | 5 | 6}
-                  roomCode={roomCode}
-                />
-              </div>
-            </div>
+            <Role role={myPlayer?.role} />
+            <RevealedCards revealedCards={revealedCards} />
+            <Round
+              playerNumber={Object.keys(players).length as 4 | 5 | 6}
+              roomCode={roomCode}
+            />
           </>
         )}
       </div>

@@ -1,22 +1,17 @@
-import { dealCards, shuffle } from "@/utils";
+import { dealCards } from "@/utils";
 import db from "../firebase/firebase.config";
 import {
   doc,
   DocumentData,
   DocumentReference,
-  getDoc,
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import { Cards, card, Player, Round as IRound } from "interface";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Cards, Player, Round as IRound } from "interface";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
-import {
-  setCurrentRound,
-  setCurrentTurnPlayerId,
-  setRevealedCards,
-} from "store/slices/gameSlice";
+import { setCurrentRound, setRevealedCards } from "store/slices/gameSlice";
 import Action from "./Action";
 
 async function startNewRound(
@@ -32,31 +27,27 @@ async function startNewRound(
     revealedCards: {
       empty: number;
       treasure: number;
-      total: number;
     };
     currentRound: IRound;
   }
 ) {
-  const dealtCards = dealCards(Object.keys(players).length, {
-    empty: revealedCards.empty,
-    treasure: revealedCards.treasure,
-  });
-  let updatedPlayers: { [userId: string]: Object } = {};
-  Object.entries(players).forEach((elem, index) => {
-    const user = elem[1];
-    updatedPlayers[user.userId] = {
-      ...user,
-      hands: dealtCards.splice(0, 5 - currentRound.roundNumber),
-    };
-  });
+  const roundNumber = currentRound.roundNumber + 1;
+  const playersWithNewHands = dealCards(players, revealedCards, roundNumber);
   await updateDoc(docRef, {
-    players: updatedPlayers,
+    players: playersWithNewHands,
     currentRound: {
       ...currentRound,
-      roundNumber: currentRound.roundNumber + 1,
+      roundNumber,
       openedCards: 0,
     },
   });
+}
+
+function countCards(
+  player: Player,
+  box: typeof Cards.KRAKEN | typeof Cards.EMPTY | typeof Cards.TREASURE
+): number {
+  return player?.hands.filter((card) => card === box).length;
 }
 
 export default function Round({
@@ -104,17 +95,16 @@ export default function Round({
         </button>
       )}
       <br />
-      <h3>
-        {roundNumber}라운드 남은 카드: {playerNumber - openedCards}장{" "}
-      </h3>
-      <p>현재 턴: {players[currentRound.currentTurnPlayerId]?.nickname}</p>
+      <p>
+        {roundNumber}라운드 남은 카드: {playerNumber - openedCards}장
+      </p>{" "}
+      <br />
+      현재 턴: {players[currentRound.currentTurnPlayerId]?.nickname}
       <h3>손패 카드</h3>
       <div>
-        빈 상자: {player?.hands.filter((card) => card === Cards.EMPTY).length}{" "}
-        <br />
-        보물상자:{" "}
-        {player?.hands.filter((card) => card === Cards.TREASURE).length} <br />
-        크라켄: {player?.hands.filter((card) => card === Cards.KRAKEN).length}
+        빈 상자: {countCards(player, Cards.EMPTY)} <br />
+        보물상자: {countCards(player, Cards.TREASURE)} <br />
+        크라켄: {countCards(player, Cards.KRAKEN)}
         <br />
       </div>
     </>

@@ -1,82 +1,49 @@
 import db from "../firebase/firebase.config";
-import { deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "store";
 import styles from "../src/styles/Game.module.css";
-import { card, Cards, Player } from "interface";
+import { Cards, Game } from "interface";
 
-async function flipCard(
-  roomCode: string,
-  game: {
-    players: { [userId: string]: Player };
-    revealedCards: {
-      empty: number;
-      treasure: number;
-    };
-    currentRound: {
-      openedCards: number;
-      currentTurnPlayerId: string;
-      roundNumber: 1 | 2 | 3 | 4;
-    };
-  },
-  chosenPlayer: string
-) {
-  const { players, revealedCards, currentRound } = game;
-  const docRef = doc(db, "games", roomCode);
-  const player = players[chosenPlayer];
-  const newHands = [...(player?.hands as card[])];
-  const card = newHands.shift();
-  console.log(`revealedCards:`, revealedCards);
-  if (card === Cards.KRAKEN)
-    await updateDoc(docRef, {
-      description: "크라켄 조우로 인한 스켈레톤의 승리",
-    });
-  else if (
-    revealedCards.treasure + 1 === Object.keys(players).length &&
-    card === Cards.TREASURE
-  )
-    await updateDoc(docRef, {
-      description: "모든 보물상자 발견으로 인한 해적의 승리",
-    });
-  else if (
-    currentRound.roundNumber === 4 &&
-    currentRound.openedCards + 1 === Object.keys(players).length
-  )
-    await updateDoc(docRef, {
-      description: "시간 초과로 인한 스켈레톤의 승리",
-    });
-  else {
-    await updateDoc(docRef, {
-      players: {
-        ...players,
-        [chosenPlayer]: {
-          ...player,
-          hands: newHands,
-        },
-      },
-      revealedCards: {
-        empty:
-          card === Cards.EMPTY ? revealedCards.empty + 1 : revealedCards.empty,
-        treasure:
-          card === Cards.TREASURE
-            ? revealedCards.treasure + 1
-            : revealedCards.treasure,
-      },
-      currentRound: {
-        ...currentRound,
-        openedCards: currentRound.openedCards + 1,
-        currentTurnPlayerId: chosenPlayer,
-      },
-    });
+function getUpdatedGame(game: Game, chosenPlayer: string) {
+  const copiedGame: Game = JSON.parse(JSON.stringify(game));
+  const card = copiedGame.players[chosenPlayer].hands.shift();
+  const numberOfPlayers = Object.keys(copiedGame.players).length;
+  copiedGame.currentRound.currentTurnPlayerId = chosenPlayer;
+  copiedGame.currentRound.openedCards += 1;
+  if (!card) throw new Error("Nominating player without cards");
+  switch (card) {
+    case Cards.EMPTY:
+      copiedGame.revealedCards.empty += 1;
+      if (
+        copiedGame.currentRound.roundNumber === 4 &&
+        copiedGame.currentRound.openedCards >= numberOfPlayers
+      )
+        copiedGame.gameEndingDescription = "시간 초과로 인한 스켈레톤의 승리";
+      break;
+    case Cards.TREASURE:
+      copiedGame.revealedCards.treasure += 1;
+      if (game.revealedCards.treasure >= numberOfPlayers)
+        copiedGame.gameEndingDescription =
+          "모든 보물상자 발견으로 인한 해적의 승리";
+      break;
+    default:
+      copiedGame.gameEndingDescription = "크라켄 조우로 인한 스켈레톤의 승리";
   }
+  return copiedGame;
+}
+
+async function flipCard(roomCode: string, game: Game, chosenPlayer: string) {
+  await updateDoc(doc(db, "games", roomCode), {
+    ...getUpdatedGame(game, chosenPlayer),
+  });
 }
 
 export default function Action({ roomCode }: { roomCode: string }) {
   const [chosenPlayer, setChosenPlayer] = useState("");
-  const { players, revealedCards, currentRound } = useSelector(
-    (state: RootState) => state.game
-  );
+  const { game } = useSelector((state: RootState) => state);
+  const { players, currentRound } = game;
   const { userId } = useSelector((state: RootState) => state.user);
   return (
     <>
@@ -100,11 +67,7 @@ export default function Action({ roomCode }: { roomCode: string }) {
       </table>
       <button
         onClick={() => {
-          flipCard(
-            roomCode,
-            { players, revealedCards, currentRound },
-            chosenPlayer
-          );
+          flipCard(roomCode, game, chosenPlayer);
         }}
         className="btn btn-primary"
         disabled={
