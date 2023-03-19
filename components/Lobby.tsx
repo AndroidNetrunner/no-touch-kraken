@@ -15,21 +15,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import { setParticipants } from "store/slices/roomSlice";
 import { Dispatch, useEffect } from "react";
-import roles from "../src/roles";
+import roles, { role } from "../src/roles";
 import { AnyAction } from "@reduxjs/toolkit";
 import styles from "../src/styles/Lobby.module.css";
 
 function decideRoles(participants: User[]): {
   [userId: string]: Omit<Player, "hands">;
 } {
-  const shuffledRoles = shuffle(roles[participants.length as 4 | 5 | 6]);
+  const shuffledRoles = shuffle(
+    roles[participants.length as 4 | 5 | 6]
+  ) as role[];
   const participantsWithRoles: {
     [userId: string]: Omit<Player, "hands">;
   } = {};
   for (let participant of participants) {
     participantsWithRoles[participant.userId] = {
       ...participant,
-      role: shuffledRoles.shift() as string,
+      role: shuffledRoles.shift() as role,
     };
   }
   return participantsWithRoles;
@@ -107,7 +109,7 @@ export default function Lobby() {
   );
   const dispatch = useDispatch();
   useEffect(() => {
-    const unSub = onSnapshot(doc(db, "rooms", roomCode), (doc) =>
+    onSnapshot(doc(db, "rooms", roomCode), (doc) =>
       addListenerToParticipants(doc, participants, dispatch)
     );
     window.addEventListener("beforeunload", () =>
@@ -119,10 +121,7 @@ export default function Lobby() {
       <div className={styles.main + " " + "container"}>
         <h1>입장 코드: {roomCode}</h1>
         <h2>
-          내 닉네임: {nickname}, 참가자:{" "}
-          {Object.values(participants)
-            .map((participant) => participant.nickname)
-            .join(", ")}
+          내 닉네임: {nickname}, 참가자: {getNicknames(participants)}
         </h2>
         <iframe
           width="560"
@@ -135,7 +134,7 @@ export default function Lobby() {
           type="submit"
           className="btn btn-primary"
           disabled={!areEnoughPeople(participants)}
-          onClick={async () => await handleClick(roomCode, participants)}
+          onClick={() => handleClick(roomCode, participants)}
         >
           게임 시작
         </button>

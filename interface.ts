@@ -1,3 +1,5 @@
+import { Roles } from "@/roles";
+
 export const Cards = {
   TREASURE: "보물상자",
   EMPTY: "빈 상자",
@@ -12,7 +14,7 @@ export interface User {
 }
 
 export interface Player extends User {
-  role: string;
+  role: typeof Roles.PIRATE | typeof Roles.SKELETON;
   hands: card[];
 }
 
@@ -28,7 +30,7 @@ export interface Game {
     treasure: number;
   };
   currentRound: Round;
-  description: string;
+  gameEndingDescription: string;
 }
 
 export interface Round {
