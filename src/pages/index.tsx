@@ -85,13 +85,21 @@ export default function Home() {
     <Room />
   ) : (
     <main className={styles.main}>
-      {/* <meta name="viewport" content="width=device-width, initial-scale=1" /> */}
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <h1 className={styles.welcome}>
         노 터치 크라켄 온라인에 오신 것을 환영합니다!
       </h1>
       <div className="container">
         <div className="row">
-          <div className="col-sm"></div>
+          <div className="col-sm">
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube.com/embed/ckd5Au7lryE?start=12"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            ></iframe>
+          </div>
           <div className="col-sm">
             <form>
               <div className="mb-3">
