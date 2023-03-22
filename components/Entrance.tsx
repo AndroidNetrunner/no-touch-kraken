@@ -79,13 +79,17 @@ export default function Entrance() {
   );
 }
 
-async function handleCreate(nickname: string, dispatch: Dispatch<AnyAction>) {
+function createRoomCode(length: number) {
   const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   let result = "";
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < length; i++) {
     result += alphabets[Math.floor(Math.random() * 26)];
   }
-  const roomCode = result;
+  return result;
+}
+
+async function handleCreate(nickname: string, dispatch: Dispatch<AnyAction>) {
+  const roomCode = createRoomCode(7);
   dispatch(setRoomCode(roomCode));
   dispatch(createUser(nickname));
   const currentUser = store.getState().user;
