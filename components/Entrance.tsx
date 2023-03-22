@@ -20,7 +20,15 @@ export default function Entrance() {
       </h1>
       <div className="container">
         <div className="row">
-          <div className="col-sm"></div>
+          <div className="col-sm">
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube.com/embed/ckd5Au7lryE?start=12"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            ></iframe>
+          </div>
           <div className="col-sm">
             <form>
               <div className="mb-3">
