@@ -68,7 +68,6 @@ export default function Round({
   const { players, revealedCards, currentRound } = useSelector(
     (state: RootState) => state.game
   );
-
   const docRef = doc(db, "games", roomCode);
   useEffect(() => {
     const unSub = onSnapshot(docRef, (doc) => {
@@ -83,16 +82,18 @@ export default function Round({
     <>
       {myUserId === currentRound.currentTurnPlayerId && (
         <Action roomCode={roomCode} />
+      )}{" "}
+      {!(playerNumber - openedCards) && (
+        <button
+          className="btn btn-primary"
+          disabled={!!(playerNumber - openedCards)}
+          onClick={() =>
+            startNewRound(docRef, { players, revealedCards, currentRound })
+          }
+        >
+          다음 라운드 시작
+        </button>
       )}
-      <button
-        className="btn btn-primary"
-        disabled={!!(playerNumber - openedCards)}
-        onClick={() =>
-          startNewRound(docRef, { players, revealedCards, currentRound })
-        }
-      >
-        다음 라운드 시작
-      </button>
       <br />
       <p>
         {roundNumber}라운드 남은 카드: {playerNumber - openedCards}장
