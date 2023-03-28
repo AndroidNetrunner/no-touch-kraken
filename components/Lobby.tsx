@@ -1,4 +1,4 @@
-import { dealCards, shuffle } from "@/utils";
+import { dealCards, RoomCode, shuffle } from "@/utils";
 import db from "../firebase/firebase.config";
 import {
   deleteDoc,
@@ -37,7 +37,7 @@ function decideRoles(participants: User[]): {
   return participantsWithRoles;
 }
 
-async function handleClick(roomCode: string, participants: User[]) {
+async function handleClick(roomCode: RoomCode, participants: User[]) {
   await deleteDoc(doc(db, "rooms", roomCode));
   const participantsWithRoles = decideRoles(participants);
   const players = dealCards(participantsWithRoles);
@@ -69,7 +69,7 @@ function isSameDataWithStoreParticipants(data: DocumentData, original: User[]) {
     return JSON.stringify(data.participants) === JSON.stringify(original);
 }
 
-async function deleteParticipant(userId: string, roomCode: string) {
+async function deleteParticipant(userId: string, roomCode: RoomCode) {
   const docRef = doc(db, "rooms", roomCode);
   const data = await getDoc(docRef);
   if (data.exists()) {

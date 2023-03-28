@@ -1,4 +1,4 @@
-import { dealCards } from "@/utils";
+import { dealCards, RoomCode } from "@/utils";
 import db from "../firebase/firebase.config";
 import {
   doc,
@@ -55,7 +55,7 @@ export default function Round({
   roomCode,
 }: {
   playerNumber: 4 | 5 | 6;
-  roomCode: string;
+  roomCode: RoomCode;
 }) {
   const dispatch = useDispatch();
   const myUserId = useSelector((state: RootState) => state.user.userId);
