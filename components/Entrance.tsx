@@ -7,6 +7,7 @@ import store from "store";
 import { setRoomCode } from "store/slices/roomSlice";
 import { createUser } from "store/slices/userSlice";
 import styles from "../src/styles/Entrance.module.css";
+import { isRoomCode, RoomCode } from "@/utils";
 
 export default function Entrance() {
   const [username, setUsername] = useState("");
@@ -71,7 +72,7 @@ export default function Entrance() {
               <button
                 type="submit"
                 className="btn btn-success"
-                disabled={!username || !/^[A-Z]{7}$/.test(entryCode)}
+                disabled={!username || !isRoomCode(entryCode)}
                 onClick={(e) => {
                   e.preventDefault();
                   handleJoin(entryCode, username, dispatch);
@@ -108,7 +109,7 @@ async function handleCreate(nickname: string, dispatch: Dispatch<AnyAction>) {
 }
 
 async function handleJoin(
-  roomCode: string,
+  roomCode: RoomCode,
   nickname: string,
   dispatch: Dispatch<AnyAction>
 ) {

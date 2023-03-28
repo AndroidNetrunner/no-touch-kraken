@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "store";
 import styles from "../src/styles/Game.module.css";
 import { Cards, Game } from "interface";
+import { RoomCode } from "@/utils";
 
 function getUpdatedGame(game: Game, chosenPlayer: string) {
   const copiedGame: Game = JSON.parse(JSON.stringify(game));
@@ -34,13 +35,13 @@ function getUpdatedGame(game: Game, chosenPlayer: string) {
   return copiedGame;
 }
 
-async function flipCard(roomCode: string, game: Game, chosenPlayer: string) {
+async function flipCard(roomCode: RoomCode, game: Game, chosenPlayer: string) {
   await updateDoc(doc(db, "games", roomCode), {
     ...getUpdatedGame(game, chosenPlayer),
   });
 }
 
-export default function Action({ roomCode }: { roomCode: string }) {
+export default function Action({ roomCode }: { roomCode: RoomCode }) {
   const [chosenPlayer, setChosenPlayer] = useState("");
   const { game } = useSelector((state: RootState) => state);
   const { players, currentRound } = game;

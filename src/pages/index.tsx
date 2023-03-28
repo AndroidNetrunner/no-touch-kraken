@@ -16,6 +16,7 @@ import {
   setRevealedCards,
 } from "store/slices/gameSlice";
 import Entrance from "components/Entrance";
+import { RoomCode } from "@/utils";
 
 async function syncStoreWithFirebase(
   {
@@ -23,9 +24,9 @@ async function syncStoreWithFirebase(
     nickname,
     userId,
   }: {
-    roomCode: string | undefined;
-    nickname: string | undefined;
-    userId: string | undefined;
+    roomCode: RoomCode;
+    nickname: string;
+    userId: string;
   },
   dispatch: Dispatch<AnyAction>
 ) {

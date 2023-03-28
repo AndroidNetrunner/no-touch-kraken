@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setDescription } from "store/slices/gameSlice";
 import { setRoomCode } from "store/slices/roomSlice";
+import { RoomCode } from "@/utils";
 
 export default function Result({
   players,
@@ -13,7 +14,7 @@ export default function Result({
 }: {
   players: { [userId: string]: Player };
   description: string;
-  roomCode: string;
+  roomCode: RoomCode;
 }) {
   const dispatch = useDispatch();
   useEffect(() => {

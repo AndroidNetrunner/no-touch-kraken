@@ -14,6 +14,12 @@ export function shuffle(array: string[]) {
   return copied;
 }
 
+export type RoomCode = string;
+
+export function isRoomCode(param: string): param is RoomCode {
+  return /^[A-Z]{7}$/.test(param);
+}
+
 function remainedEmptyCards(
   numberOfPlayers: number,
   revealedEmptyCards: number
