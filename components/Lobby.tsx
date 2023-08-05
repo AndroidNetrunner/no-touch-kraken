@@ -89,7 +89,7 @@ function addListenerToParticipants(
   dispatch: Dispatch<AnyAction>
 ) {
   const currentData = doc.data();
-  if (currentData && isSameDataWithStoreParticipants(currentData, participants))
+  if (currentData && !isSameDataWithStoreParticipants(currentData, participants))
     dispatch(setParticipants(currentData.participants));
 }
 
