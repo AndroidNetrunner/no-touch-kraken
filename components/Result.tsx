@@ -26,7 +26,7 @@ export default function Result({
         }),
       });
     })();
-  }, []);
+  }, [players, roomCode]);
   return (
     <>
       <h1>게임이 종료되었습니다!</h1>

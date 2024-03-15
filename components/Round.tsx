@@ -77,7 +77,7 @@ export default function Round({
         if (data.revealedCards) dispatch(setRevealedCards(data.revealedCards));
       }
     });
-  }, []);
+  }, [roomCode, dispatch, docRef]);
   return (
     <>
       {myUserId === currentRound.currentTurnPlayerId && (

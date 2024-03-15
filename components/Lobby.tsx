@@ -89,7 +89,10 @@ function addListenerToParticipants(
   dispatch: Dispatch<AnyAction>
 ) {
   const currentData = doc.data();
-  if (currentData && !isSameDataWithStoreParticipants(currentData, participants))
+  if (
+    currentData &&
+    !isSameDataWithStoreParticipants(currentData, participants)
+  )
     dispatch(setParticipants(currentData.participants));
 }
 
@@ -115,7 +118,7 @@ export default function Lobby() {
     window.addEventListener("beforeunload", () =>
       deleteParticipant(myUserId, roomCode)
     );
-  }, []);
+  }, [dispatch, myUserId, participants, roomCode]);
   return (
     <>
       <div className={styles.main + " " + "container"}>

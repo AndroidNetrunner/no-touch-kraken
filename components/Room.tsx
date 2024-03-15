@@ -9,7 +9,6 @@ import Game from "components/Game";
 export default function Room() {
   const [gameExists, setGameExists] = useState(false);
   const { roomCode } = useSelector((state: RootState) => state.room);
-  if (!roomCode) return <></>;
   useEffect(() => {
     const unsubRoom = onSnapshot(doc(db, "rooms", roomCode), (doc) => {
       if (!doc.exists()) {
@@ -17,6 +16,7 @@ export default function Room() {
         unsubRoom();
       }
     });
-  }, []);
+  }, [roomCode]);
+  if (!roomCode) return <></>;
   return gameExists ? <Game /> : <Lobby />;
 }

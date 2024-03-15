@@ -43,7 +43,7 @@ export default function Game() {
     if (myPlayerId) Cookies.set("userId", myPlayerId);
     if (myPlayer) Cookies.set("nickname", nickname);
     if (roomCode) Cookies.set("roomCode", roomCode);
-  }, []);
+  }, [dispatch, myPlayerId, nickname, roomCode, roundNumber, myPlayer]);
   return (
     <>
       <div className={"container" + " " + styles.main}>
