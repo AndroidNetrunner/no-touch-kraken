@@ -49,6 +49,6 @@ export default function Home() {
     const { roomCode, nickname, userId } = Cookies.get();
     if (!roomCode || !nickname || !userId) return;
     syncStoreWithFirebase({ roomCode, nickname, userId }, dispatch);
-  }, []);
+  }, [dispatch]);
   return code ? <Room /> : <Entrance />;
 }
