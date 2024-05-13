@@ -1,11 +1,11 @@
 import db from "../firebase/firebase.config";
-import { doc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "store";
 import styles from "../src/styles/Game.module.css";
 import { Cards, Game } from "interface";
 import { RoomCode } from "@/utils";
+import { ref, set } from "firebase/database";
 
 function getUpdatedGame(game: Game, chosenPlayer: string) {
   const copiedGame: Game = JSON.parse(JSON.stringify(game));
@@ -25,7 +25,7 @@ function getUpdatedGame(game: Game, chosenPlayer: string) {
       break;
     case Cards.TREASURE:
       copiedGame.revealedCards.treasure += 1;
-      if (game.revealedCards.treasure >= numberOfPlayers)
+      if (copiedGame.revealedCards.treasure >= numberOfPlayers)
         copiedGame.gameEndingDescription =
           "모든 보물상자 발견으로 인한 해적의 승리";
       break;
@@ -36,7 +36,7 @@ function getUpdatedGame(game: Game, chosenPlayer: string) {
 }
 
 async function flipCard(roomCode: RoomCode, game: Game, chosenPlayer: string) {
-  await updateDoc(doc(db, "games", roomCode), {
+  await set(ref(db, "games/" + roomCode), {
     ...getUpdatedGame(game, chosenPlayer),
   });
 }
@@ -57,7 +57,7 @@ export default function Action({ roomCode }: { roomCode: RoomCode }) {
             <tr key={player.userId}>
               <td
                 className={chosenPlayer === player.userId ? styles.red : ""}
-                onClick={(e) => {
+                onClick={(_) => {
                   setChosenPlayer(player.userId);
                 }}
               >

@@ -1,8 +1,17 @@
 {
   "projects": {
-    "default": "no-touch-kraken",
-    "no-touch-kraken": "no-touch-kraken"
+    "default": "no-touch-kraken-754c8",
+    "no-touch-kraken": "no-touch-kraken",
+    "play-kraken": "no-touch-kraken-754c8"
   },
-  "targets": {},
+  "targets": {
+    "no-touch-kraken-754c8": {
+      "hosting": {
+        "play-kraken": [
+          "play-kraken"
+        ]
+      }
+    }
+  },
   "etags": {}
 }

@@ -1,5 +1,4 @@
 import db from "../firebase/firebase.config";
-import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
@@ -14,6 +13,7 @@ import Cookies from "js-cookie";
 import styles from "../src/styles/Game.module.css";
 import Role from "./Role";
 import RevealedCards from "./RevealedCards";
+import { onValue, ref } from "firebase/database";
 
 export default function Game() {
   const {
@@ -29,20 +29,26 @@ export default function Game() {
   const myPlayer = players[myPlayerId];
   const dispatch = useDispatch();
   useEffect(() => {
-    onSnapshot(doc(db, "games", roomCode), (doc) => {
-      const data = doc.data();
-      if (data) {
-        dispatch(setPlayers(data.players));
-        if (data.description) {
-          dispatch(setDescription(data.description));
+    const unSubscribe = onValue(
+      ref(db, "games/" + roomCode),
+      (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          dispatch(setPlayers(data.players));
+          if (data.gameEndingDescription) {
+            dispatch(setDescription(data.gameEndingDescription));
+          }
         }
-        if (data.currentRound.roundNumber !== roundNumber)
-          dispatch(setCurrentRound(data.currentRound));
+      },
+      (error) => {
+        console.log("Snapshot listener disconnected: ", error);
       }
-    });
+    );
     if (myPlayerId) Cookies.set("userId", myPlayerId);
     if (myPlayer) Cookies.set("nickname", nickname);
     if (roomCode) Cookies.set("roomCode", roomCode);
+
+    return unSubscribe;
   }, [dispatch, myPlayerId, nickname, roomCode, roundNumber, myPlayer]);
   return (
     <>

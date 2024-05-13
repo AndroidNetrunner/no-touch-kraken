@@ -1,11 +1,12 @@
 import db from "../firebase/firebase.config";
-import { deleteDoc, doc, setDoc } from "firebase/firestore";
+// import { deleteDoc, doc, setDoc } from "firebase/firestore";
 import { Player } from "interface";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setDescription } from "store/slices/gameSlice";
 import { setRoomCode } from "store/slices/roomSlice";
 import { RoomCode } from "@/utils";
+import { ref, remove, set } from "firebase/database";
 
 export default function Result({
   players,
@@ -19,8 +20,8 @@ export default function Result({
   const dispatch = useDispatch();
   useEffect(() => {
     (async () => {
-      await deleteDoc(doc(db, "games", roomCode));
-      await setDoc(doc(db, "results", roomCode), {
+      await remove(ref(db, "games/" + roomCode));
+      await set(ref(db, "results/" + roomCode), {
         players: Object.values(players).map((player) => {
           return { nickname: player.nickname, role: player.role };
         }),

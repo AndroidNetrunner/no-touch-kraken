@@ -6,7 +6,7 @@ export const Cards = {
   KRAKEN: "크라켄",
 } as const;
 
-export type card = typeof Cards[keyof typeof Cards];
+export type card = (typeof Cards)[keyof typeof Cards];
 
 export interface User {
   nickname: string;

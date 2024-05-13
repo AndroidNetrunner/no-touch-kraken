@@ -19,8 +19,8 @@ export default function Role({
       <span className={styles.description}>
         {"승리 조건: " +
           (role === Roles.PIRATE
-            ? "4라운드 안에 크라켄을 만나지 않고 4개의 보물상자를 모두 찾기"
-            : "4라운드동안 4개의 보물상자를 못 찾거나, 크라켄을 조우하기")}
+            ? "4라운드 안에 크라켄을 만나지 않고 보물상자를 모두 찾기"
+            : "4라운드동안 모든 보물상자를 찾지 못하거나, 크라켄을 조우하기")}
       </span>
     </>
   );

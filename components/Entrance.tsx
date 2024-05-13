@@ -1,6 +1,5 @@
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import db from "../firebase/firebase.config";
-import { arrayUnion, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import store from "store";
@@ -8,6 +7,7 @@ import { setRoomCode } from "store/slices/roomSlice";
 import { createUser } from "store/slices/userSlice";
 import styles from "../src/styles/Entrance.module.css";
 import { isRoomCode, RoomCode } from "@/utils";
+import { get, ref, set, update } from "firebase/database";
 
 export default function Entrance() {
   const [username, setUsername] = useState("");
@@ -102,10 +102,14 @@ async function handleCreate(nickname: string, dispatch: Dispatch<AnyAction>) {
   dispatch(setRoomCode(roomCode));
   dispatch(createUser(nickname));
   const currentUser = store.getState().user;
-  await setDoc(doc(db, "rooms", roomCode), {
-    admin: currentUser,
-    participants: [currentUser],
-  });
+  try {
+    await set(ref(db, "rooms/" + roomCode), {
+      admin: currentUser,
+      participants: { [currentUser.userId]: currentUser },
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function handleJoin(
@@ -113,13 +117,15 @@ async function handleJoin(
   nickname: string,
   dispatch: Dispatch<AnyAction>
 ) {
-  const docRef = doc(db, "rooms", roomCode);
-  const roomSnap = await getDoc(docRef);
-  if (!roomSnap.exists()) alert("해당하는 방이 존재하지 않습니다.");
+  const docRef = ref(db, "rooms/" + roomCode);
+  const roomData = await get(docRef);
+  if (!roomData.exists()) alert("해당하는 방이 존재하지 않습니다.");
   else {
     dispatch(setRoomCode(roomCode));
     dispatch(createUser(nickname));
     const currentUser = store.getState().user;
-    await updateDoc(docRef, { participants: arrayUnion(currentUser) });
+    const newParticipants = roomData.val().participants;
+    newParticipants[currentUser.userId] = currentUser;
+    await update(docRef, { participants: newParticipants });
   }
 }

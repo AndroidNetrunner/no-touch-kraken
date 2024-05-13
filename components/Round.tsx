@@ -1,21 +1,16 @@
 import { dealCards, RoomCode } from "@/utils";
 import db from "../firebase/firebase.config";
-import {
-  doc,
-  DocumentData,
-  DocumentReference,
-  onSnapshot,
-  updateDoc,
-} from "firebase/firestore";
 import { Cards, Player, Round as IRound } from "interface";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import { setCurrentRound, setRevealedCards } from "store/slices/gameSlice";
 import Action from "./Action";
+import { DatabaseReference, onValue, ref, update } from "firebase/database";
 
+// TODO: firebase realtime database로 변경
 async function startNewRound(
-  docRef: DocumentReference<DocumentData>,
+  docRef: DatabaseReference,
   {
     players,
     revealedCards,
@@ -33,7 +28,7 @@ async function startNewRound(
 ) {
   const roundNumber = currentRound.roundNumber + 1;
   const playersWithNewHands = dealCards(players, revealedCards, roundNumber);
-  await updateDoc(docRef, {
+  await update(docRef, {
     players: playersWithNewHands,
     currentRound: {
       ...currentRound,
@@ -68,16 +63,19 @@ export default function Round({
   const { players, revealedCards, currentRound } = useSelector(
     (state: RootState) => state.game
   );
-  const docRef = doc(db, "games", roomCode);
+  const docRef = ref(db, "games/" + roomCode);
   useEffect(() => {
-    const unSub = onSnapshot(docRef, (doc) => {
-      const data = doc.data();
+    const unSub = onValue(docRef, (snapshot) => {
+      const data = snapshot.val();
       if (data) {
         if (data.currentRound) dispatch(setCurrentRound(data.currentRound));
         if (data.revealedCards) dispatch(setRevealedCards(data.revealedCards));
       }
     });
-  }, [roomCode, dispatch, docRef]);
+    return () => {
+      unSub();
+    };
+  }, []);
   return (
     <>
       {myUserId === currentRound.currentTurnPlayerId && (

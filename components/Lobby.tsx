@@ -1,16 +1,6 @@
 import { dealCards, RoomCode, shuffle } from "@/utils";
 import db from "../firebase/firebase.config";
-import {
-  deleteDoc,
-  doc,
-  DocumentData,
-  DocumentSnapshot,
-  getDoc,
-  onSnapshot,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
-import { Player, User } from "interface";
+import { Lobby as ILobby, Player, User } from "interface";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
 import { setParticipants } from "store/slices/roomSlice";
@@ -18,6 +8,16 @@ import { Dispatch, useEffect } from "react";
 import roles, { role } from "../src/roles";
 import { AnyAction } from "@reduxjs/toolkit";
 import styles from "../src/styles/Lobby.module.css";
+import {
+  DataSnapshot,
+  get,
+  onDisconnect,
+  onValue,
+  ref,
+  remove,
+  set,
+  update,
+} from "firebase/database";
 
 function decideRoles(participants: User[]): {
   [userId: string]: Omit<Player, "hands">;
@@ -38,10 +38,11 @@ function decideRoles(participants: User[]): {
 }
 
 async function handleClick(roomCode: RoomCode, participants: User[]) {
-  await deleteDoc(doc(db, "rooms", roomCode));
+  const docRef = ref(db, "rooms/" + roomCode);
+  await remove(docRef);
   const participantsWithRoles = decideRoles(participants);
   const players = dealCards(participantsWithRoles);
-  await setDoc(doc(db, "games", roomCode), {
+  await set(ref(db, "games/" + roomCode), {
     players,
     revealedCards: {
       empty: 0,
@@ -63,37 +64,45 @@ function getNicknames(participants: Object) {
     .map((participant) => participant.nickname)
     .join(", ");
 }
-
-function isSameDataWithStoreParticipants(data: DocumentData, original: User[]) {
-  if (data)
-    return JSON.stringify(data.participants) === JSON.stringify(original);
+function convertObjectToArray(obj: { [userId: string]: User }) {
+  if (obj) return Object.keys(obj).map((key) => obj[key]);
 }
 
-async function deleteParticipant(userId: string, roomCode: RoomCode) {
-  const docRef = doc(db, "rooms", roomCode);
-  const data = await getDoc(docRef);
-  if (data.exists()) {
-    await updateDoc(docRef, {
-      participants: data
-        .data()
-        .participants.filter(
-          (participant: User) => participant.userId !== userId
-        ),
-    });
-  }
+function isSameDataWithStoreParticipants(
+  data: User[] | undefined,
+  original: User[]
+) {
+  if (data) return JSON.stringify(data) === JSON.stringify(original);
 }
+
+// async function deleteParticipant(userId: string, roomCode: RoomCode) {
+//   const docRef = ref(db, "rooms/" + roomCode);
+//   const data = await get(docRef);
+//   if (data.exists()) {
+//     await update(docRef, {
+//       participants: data
+//         .val()
+//         .participants.filter(
+//           (participant: User) => participant.userId !== userId
+//         ),
+//     });
+//   }
+// }
 
 function addListenerToParticipants(
-  doc: DocumentSnapshot,
+  doc: DataSnapshot,
   participants: User[],
   dispatch: Dispatch<AnyAction>
 ) {
-  const currentData = doc.data();
+  const currentData = doc.val();
   if (
     currentData &&
-    !isSameDataWithStoreParticipants(currentData, participants)
+    !isSameDataWithStoreParticipants(
+      convertObjectToArray(currentData.participants),
+      participants
+    )
   )
-    dispatch(setParticipants(currentData.participants));
+    dispatch(setParticipants(convertObjectToArray(currentData.participants)));
 }
 
 function areEnoughPeople(participants: User[]) {
@@ -110,14 +119,22 @@ export default function Lobby() {
   const { participants, roomCode } = useSelector(
     (state: RootState) => state.room
   );
+  console.log("participants", participants);
   const dispatch = useDispatch();
   useEffect(() => {
-    onSnapshot(doc(db, "rooms", roomCode), (doc) =>
-      addListenerToParticipants(doc, participants, dispatch)
+    const unsubscribe = onValue(ref(db, "rooms/" + roomCode), (snapshot) =>
+      addListenerToParticipants(snapshot, participants, dispatch)
     );
-    window.addEventListener("beforeunload", () =>
-      deleteParticipant(myUserId, roomCode)
-    );
+    // TODO: 방을 나갈 때 참가자 목록에서 삭제
+
+    // window.addEventListener("beforeunload", () =>
+    //   deleteParticipant(myUserId, roomCode)
+    // );
+    const userRef = ref(db, "rooms/" + roomCode + "/participants/" + myUserId);
+    onDisconnect(userRef).remove();
+    return () => {
+      unsubscribe();
+    };
   }, [dispatch, myUserId, participants, roomCode]);
   return (
     <>

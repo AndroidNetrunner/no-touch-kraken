@@ -4,14 +4,14 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "target": "play-kraken",
     "source": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "frameworksBackend": {
       "region": "asia-east1"
     }
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }

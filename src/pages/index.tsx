@@ -17,6 +17,7 @@ import {
 } from "store/slices/gameSlice";
 import Entrance from "components/Entrance";
 import { RoomCode } from "@/utils";
+import { get, ref } from "firebase/database";
 
 async function syncStoreWithFirebase(
   {
@@ -31,7 +32,7 @@ async function syncStoreWithFirebase(
   dispatch: Dispatch<AnyAction>
 ) {
   if (!roomCode || !nickname || !userId) return;
-  const data = (await getDoc(doc(db, "games", roomCode))).data();
+  const data = (await get(ref(db, "games/" + roomCode))).val();
   if (data) {
     dispatch(setRoomCode(roomCode));
     dispatch(setNickname(nickname));
